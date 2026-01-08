@@ -1,3 +1,4 @@
+
 import java.util.ArrayList;
 
 public class TextProcessor {
@@ -19,35 +20,41 @@ public class TextProcessor {
    * Finds and removes all occurrences of each stop word from textList
    */
   public void removeStopWords(ArrayList<String> stopWords) {
-    /*ArrayList<String> removeStop = new ArrayList<>();
-    //itterate through lines
-    for (String text:textList){
-      String line = text;
-      //itterate through stop words
-      for (String word:stopWords){
-        if (text.contains(word)){
-          int index = text.indexOf(word);
-          int len = word.length;
-          line = line.substring(0,index) + line.substring(index+len);
-        }
-      }
-      //add to new list
-      removeStop.add(line);
-    }
-    System.out.println(removeStop);*/
 
     for (String stop:stopWords){
       for (int i=0; i<textList.size(); i++){
         String line = textList.get(i);
-        ArrayList<String> words = FileOperator.getWords(line);
-        for (int j=0; j<words.size(); j++){
-          if (words.get(j).equals(stop)){
-            words.remove(j);
-            j--;
-          }
+        // //middle
+        // line = line.replaceAll(" "+stop+" ", " ");
+        // // beggning
+        // line = line.startsWith(stop)?line.replace(stop, ""):line;
+        // //end
+        // line = line.replace(" "+stop, "\n");
+
+        // Handle word at the beginning of line
+            if (line.startsWith(stop + " ")) {
+                line = line.substring(stop.length() + 1);
+            }
+            
+            // Handle word in the middle (with spaces on both sides)
+            line = line.replaceAll(" " + stop + " ", " ");
+            
+            // Handle word at the end of line
+            if (line.endsWith(" " + stop)) {
+                line = line.substring(0, line.length() - stop.length() - 1);
+            }
+            
+            // Handle case where line contains only the stop word
+            if (line.equals(stop)) {
+                line = "";
+            }
+        
+        // Clean up multiple spaces that may have been created
+        line = line.replaceAll("\\s+", " ").trim();
+
+        textList.set(i, line);
         }
       }
-    }
   }
    /*
    * Returns a String containing the text in textList
@@ -66,7 +73,8 @@ public class TextProcessor {
         ArrayList<String> stopwords = FileOperator.getStringList("stopwords.txt");
         ArrayList<String> posts = FileOperator.getStringList("posts.txt");
         TextProcessor t = new TextProcessor(posts);
-
+        t.removeStopWords(stopwords);
+        System.out.println(t);
     }
     
 }

@@ -1,5 +1,5 @@
-import java.util.*;
 import java.io.*;
+import java.util.*;
 /*
  * Reads data from a file
  */
@@ -63,7 +63,7 @@ public class FileOperator {
     public static ArrayList<String> getWords(String text) {
         ArrayList<String> tempList = new ArrayList<String>();
         String[] words = text.split(" ");
-        for(String w : words) {
+        for (String w : words) {
             tempList.add(w);
         }
         return tempList;
