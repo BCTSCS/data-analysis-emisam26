@@ -1,6 +1,6 @@
 import java.util.ArrayList;
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ArticleAnalyzer {
 
@@ -8,8 +8,11 @@ public class ArticleAnalyzer {
     private ArrayList<Article> articles; //load from FileOperators json 
 
     public ArticleAnalyzer(){
-        stopWords = new ArrayList<>();
+        stopWords = FileOperator.getStringList("stopwords.txt");
+        System.out.println("Total stop words: " + stopWords.size());
+
         articles = new ArrayList<>();
+        System.out.println("Total articles: " + articles.size());
     }
 
     public void addStopWord(String word){
@@ -21,29 +24,33 @@ public class ArticleAnalyzer {
     }
     //use Pattern and matcher to create
     public Article parseJson(String jsonLine){
-        String link = "";
-        String headline = "";
-        String category = "";
-        String description = "";
-        String author = "";
-        String date = "";
+        Article result;
+        Pattern l = Pattern.compile("\"link\":\\s*\"([^\"]+)\"");  //regex to extract words
+        Pattern h = Pattern.compile("\"headline\":\\s*\"([^\"]+)\"");
+        Pattern c = Pattern.compile("\"category\":\\s*\"([^\"]+)\"");
+        Pattern desc = Pattern.compile("\"short_description\":\\s*\"([^\"]+)\"");
+        Pattern a = Pattern.compile("\"authors\":\\s*\"([^\"]+)\"");
+        Pattern dat = Pattern.compile("\"date\":\\s*\"([^\"]+)\"");
         
-        Pattern pattern = Pattern.compile("\"([^\"]+)\"\\s*:\\s*\"([^\"]+)\"");
-        Matcher matcher = pattern.matcher(jsonLine);
-            
-        while (matcher.find()) {
-            String fieldName = matcher.group(1);
-            String fieldValue = matcher.group(2);
-            switch (fieldName) {
-                case "link" -> link = fieldValue;
-                case "headline" -> headline = fieldValue;
-                case "category" -> category = fieldValue;
-                case "description", "short_description" -> description = fieldValue;
-                case "author", "authors" -> author = fieldValue;
-                case "date" -> date = fieldValue;
-                }
-        }
-        return new Article(link, headline, category, description, author, date);
+        Matcher lm =l.matcher(jsonLine); //parameter - line of text
+        Matcher hm =h.matcher(jsonLine);
+        Matcher cm =c.matcher(jsonLine);
+        Matcher descm =desc.matcher(jsonLine);
+        Matcher am =a.matcher(jsonLine);
+        Matcher datem =dat.matcher(jsonLine);
+
+        String link = lm.find() ? lm.group(1) : ""; //extract the destined part
+        String headline = hm.find() ? hm.group(1) : ""; 
+        String category = cm.find() ? cm.group(1) : ""; 
+        String description = descm.find() ? descm.group(1) : ""; 
+        String author = am.find() ? am.group(1) : ""; 
+        String date = datem.find() ? datem.group(1) : ""; 
+
+        String new_description = removeStopWords(description);
+
+        // result = new Article(link, "", "", "", "", "");
+        result = new Article(link, headline, category, new_description, author, date);
+        return result;
     }
     //remove stop words from Description
     public String removeStopWords(String text){
@@ -60,22 +67,11 @@ public class ArticleAnalyzer {
 
     public static void main(String[] args) {
         ArticleAnalyzer analyzer = new ArticleAnalyzer();
-        ArrayList<String> stopwords = FileOperator.getStringList("stopwords.txt");
-        for (String word:stopwords){
-            analyzer.addStopWord(word);
-        }
-        ArrayList<String> totalArticles = FileOperator.getStringList("News_Category_Dataset_v3.json");
-        for (String art:totalArticles){
-            Article a = analyzer.parseJson(art);
-            analyzer.addArticle(a);
-        }
-
-        for (Article article : analyzer.articles) {
-            String originalDescription = article.getDescription();
-            String cleanedDescription = analyzer.removeStopWords(originalDescription);
-            System.out.println("Headline: " + article.getHeadline());
-            System.out.println("Description: " + cleanedDescription);
-            System.out.println("-------------");
+        ArrayList<String> lines = FileOperator.getStringList("data.txt");
+        // String line = lines.get(0);
+        for (String line : lines) {
+            Article a = analyzer.parseJson(line);
+            System.out.println(a);
         }
     }
 
