@@ -1,5 +1,4 @@
 // import java.io.File;
-import java.awt.event.WindowAdapter;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -8,6 +7,8 @@ public class ArticleAnalyzer {
 
     private ArrayList<String> stopWords; //load from FileOperators
     private ArrayList<Article> articles; //load from FileOperators json 
+    private static ArrayList<String> words; 
+    private static ArrayList<Double> values;  
 
     public ArticleAnalyzer(){
         stopWords = FileOperator.getStringList("stopwords.txt");
@@ -64,21 +65,30 @@ public class ArticleAnalyzer {
     }
 
     public static void main(String[] args) {
-        ArticleAnalyzer analyzer = new ArticleAnalyzer();
-        ArrayList<String> lines = FileOperator.getStringList("data.txt");
-        String line = lines.get(0);
-        Article a = analyzer.parseJson(line);
-        String clean = analyzer.removeStopWords(a.getDescription());
-        a.setDescription(clean);
-        analyzer.addArticle(a);
-        System.out.println(a);
-        // for (String line : lines) {
-        //     Article a = analyzer.parseJson(line);
-        //     String clean = analyzer.removeStopWords(a.getDescription());
-        //     a.setDescription(clean);
-        //     analyzer.addArticle(a);
-        //     System.out.println(a);
-        // }
+        // ArticleAnalyzer analyzer = new ArticleAnalyzer();
+        // ArrayList<String> lines = FileOperator.getStringList("data.txt");
+        // String line = lines.get(0);
+        // Article a = analyzer.parseJson(line);
+        // String clean = analyzer.removeStopWords(a.getDescription());
+        // a.setDescription(clean);
+        // analyzer.addArticle(a);
+        // System.out.println(a);
+
+        ArrayList<String> sentiments = FileOperator.getStringList("sentiments.txt");
+        ArrayList<String> words = new ArrayList<>();
+        ArrayList<Double> values = new ArrayList<>();
+        for (String sentiment : sentiments){
+            Pattern w = Pattern.compile("([A-Za-z0-9]+)\\,(\\-?\\d+\\.?\\d*)");
+            Matcher wm = w.matcher(sentiment);
+            boolean found = wm.find(); 
+            String word = found ? wm.group(1) : ""; 
+            Double value = found ? Double.parseDouble(wm.group(2)) : 0.0;
+            words.add(word);
+            values.add(value);
+            System.out.println(word+"   ----  "+value);
+        }
+        
+        
     }
 
 }
